@@ -1,16 +1,30 @@
 import sys
 import os
 import argparse
-import secrets
 import string
+import random
 
 homedir = os.environ['HOME']
 
 
+class UserNamespace(object):
+    pass
+
+
+user_namespace = UserNamespace()
+parser = argparse.ArgumentParser(description='Utils')
+parser.add_argument('-l', dest='pass_length', type=int, required=False, help="Password length")
+parser.parse_known_args(namespace=user_namespace)
+
+
 def generate_password():
-    alphabet = string.ascii_letters + string.digits
-    password = ''.join(secrets.choice(alphabet) for i in range(20))
-    print(password)
+    pass_length = user_namespace.pass_length
+    if not pass_length:
+        pass_length = 20
+
+    password_characters = string.ascii_letters + string.digits + string.punctuation
+    password = ''.join(random.choice(password_characters) for i in range(pass_length))
+    print("Pass is: ", password)
 
 
 class GeneratePassword(argparse.Action):
@@ -36,13 +50,6 @@ class GeneratePassword(argparse.Action):
     def __call__(self, parser, args, values, option_string=None):
         generate_password()
 
-
-class UserNamespace(object):
-    pass
-
-
-user_namespace = UserNamespace()
-parser = argparse.ArgumentParser(description='Utils')
 
 parser.add_argument('-g', dest='generate', action=GeneratePassword, type=str, required=False, help="Generate password")
 args = parser.parse_args(namespace=user_namespace)
