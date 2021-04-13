@@ -7,7 +7,7 @@ import random
 
 homedir = os.environ['HOME']
 
-from keychain_utils import set_internet_password
+from keychain_utils import set_internet_password, get_internet_password
 
 
 class UserNamespace(object):
@@ -68,7 +68,6 @@ def generate_password():
         password = generate_medium_pass(pass_length)
 
     if password:
-        print("Password: ", password)
         user_input = input("Do you want to save this pass in keychain: y/n\n")
         if user_input.lower() == "y":
             user_name = input("Please add user name: \n")
@@ -76,6 +75,8 @@ def generate_password():
             set_internet_password(service, user_name, password)
             print("Password saved to keychain")
 
+        elif user_input.lower() == "n":
+            print("Password: ", password)
     else:
         print("Could not generate password")
 
@@ -86,6 +87,16 @@ def check_repo_dir():
         stderr=subprocess.PIPE)
     line = proc.stdout.readline()
     print(line.decode("utf-8").rstrip('\r\n')) if type(line) == bytes else print(line)
+
+
+def get_pass_password():
+    """
+    Functions that gets passwords from the keychain
+    :return:
+    """
+    service = input("Please enter service\n")
+    account = input("Please enter account\n")
+    print(get_internet_password(service, account))
 
 
 def find_str_in_repo():
@@ -182,8 +193,35 @@ class FindInRepo(argparse.Action):
         find_str_in_repo()
 
 
+class GetFromKeychain(argparse.Action):
+    def __init__(self,
+                 option_strings,
+                 dest=None,
+                 nargs=0,
+                 default=None,
+                 required=False,
+                 type=None,
+                 metavar=None,
+                 help=None):
+        super(GetFromKeychain, self).__init__(
+            option_strings=option_strings,
+            dest=dest,
+            nargs=nargs,
+            default=default,
+            required=required,
+            metavar=metavar,
+            type=type,
+            help=help)
+
+    def __call__(self, parser, args, values, option_string=None):
+        get_pass_password()
+
+
 parser.add_argument('-g', dest='generate', action=GeneratePassword, type=str, required=False, help="Generate password")
 parser.add_argument('-s', dest='scan', action=FindInRepo, type=str, required=False, help="Find strings in repo")
+parser.add_argument('-gp', dest='get_pass', action=GetFromKeychain, type=str, required=False,
+                    help="Get pass from keychain")
+
 args = parser.parse_args(namespace=user_namespace)
 
 
