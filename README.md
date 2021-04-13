@@ -1,8 +1,26 @@
 # keychain_utils
 
-## This utils help to save websites passwords from csv or any other format to Keychain.
+## This utils help
 
 ### Additionally, help to save passwords to Keychain using python or command line tool
+
+### Usage
+
+```
+usage: secutil [-h] [-l PASS_LENGTH] [-p REPO_PATH] [-a REPO_ARG] [-rp REPLACE_ARG] [-c COMPLEXITY] [-g] [-s]
+
+Utils
+
+optional arguments:
+  -h, --help       show this help message and exit
+  -l PASS_LENGTH   Password length
+  -p REPO_PATH     Repo path
+  -a REPO_ARG      Repo arg
+  -rp REPLACE_ARG  Repo replace arg
+  -c COMPLEXITY    Password complexity: 1 - easy, 2 - medium, 3 - hard
+  -g               Generate password
+  -s               Find strings in repo
+```
 
 ## Manual
 
