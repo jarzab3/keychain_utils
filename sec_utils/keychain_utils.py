@@ -75,7 +75,7 @@ def set_generic_password(service, account, password):
 
 
 def set_internet_password(service, account, password, comment=""):
-    cmd = "security add-internet-password -U -a '%s' -s '%s' -w '%s' -r http -j 'LastPass   ---  %s'" % (
+    cmd = "security add-internet-password -U -a '%s' -s '%s' -w '%s' -r http -j '%s'" % (
         account, service, password, comment)
     p = os.popen(cmd)
     s = p.read()
