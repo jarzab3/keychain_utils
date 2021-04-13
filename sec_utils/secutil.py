@@ -4,9 +4,10 @@ import os
 import argparse
 import string
 import random
-from time import sleep
 
 homedir = os.environ['HOME']
+
+from keychain_utils import set_internet_password
 
 
 class UserNamespace(object):
@@ -17,8 +18,8 @@ user_namespace = UserNamespace()
 parser = argparse.ArgumentParser(description='Utils')
 parser.add_argument('-l', dest='pass_length', type=int, required=False, help="Password length")
 parser.add_argument('-p', dest='repo_path', type=str, required=False, help="Repo path")
-parser.add_argument('-a', dest='repo_args', type=str, required=False, help="Repo args")
-parser.add_argument('-rp', dest='replace', type=str, required=False, help="Repo replace")
+parser.add_argument('-a', dest='repo_arg', type=str, required=False, help="Repo arg")
+parser.add_argument('-rp', dest='replace_arg', type=str, required=False, help="Repo replace arg")
 parser.add_argument('-c', dest='complexity', type=int, required=False,
                     help="Password complexity: 1 - easy, 2 - medium, 3 - hard")
 parser.parse_known_args(namespace=user_namespace)
@@ -68,6 +69,13 @@ def generate_password():
 
     if password:
         print("Password: ", password)
+        user_input = input("Do you want to save this pass in keychain: y/n\n")
+        if user_input.lower() == "y":
+            user_name = input("Please add user name: \n")
+            service = input("Please add service name: \n")
+            set_internet_password(service, user_name, password)
+            print("Password saved to keychain")
+
     else:
         print("Could not generate password")
 
@@ -85,58 +93,47 @@ def find_str_in_repo():
     Functions checks first if given dir is correct then find string in that repo
     :return:
     """
-    arg = ""
-    dir_path = ""
-    rp = user_namespace.repo_path
-    ra = user_namespace.repo_args
+    repo_path = user_namespace.repo_path
+    repo_args = user_namespace.repo_arg
+    replace_arg = user_namespace.replace_arg
 
-    if rp is None:
+    if repo_path is None:
         print("Please provide repo directory")
         sys.exit()
     else:
-        if not os.path.isdir(rp):
+        if not os.path.isdir(repo_path):
             print("-p Incorrect directory")
             sys.exit()
         else:
-            if ra is None:
+            if repo_args is None:
                 print("Please provide strings to scan in the repo")
                 sys.exit()
 
-            os.chdir(rp)
-            print("Scanning repo: {} for {}".format(rp, ra))
+            os.chdir(repo_path)
+
+            print("Scanning repo: {} for '{}'".format(repo_path, repo_args))
+
+            if replace_arg is not None:
+                print("Replacing repo: {} for '{}' with '{}\n".format(repo_path, repo_args, replace_arg))
+                cmd = "git filter-branch --tree-filter \"find . -type f -not -path '*/\.git/*' -exec sed -i -e 's/{}/{}/g' {{}} \;\"".format(
+                    repo_args, replace_arg)
+
+                print(cmd)
+
+                stream = os.popen(cmd)
+                output = stream.read()
+                print(output)
+
+                sys.exit()
+
             print("")
-
-            stream = os.popen('git --no-pager grep ' + ra + ' $(git rev-list --all)')
+            stream = os.popen('git --no-pager grep ' + repo_args + ' $(git rev-list --all)')
             output = stream.read()
-
             print(output)
-
             if output == "":
                 print("Nothing there")
             else:
-                print("please use -rp and provide string to change")
-
-            # proc = subprocess.Popen(
-            #     ["pwd"],
-            # ['git', '--no-pager', 'grep', ra, "$(git rev-list --all)"],
-            # stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            # stderr=subprocess.PIPE, cwd=rp, shell=True)
-            # pid = proc.pid
-            # print("OpenConnect PID: ", pid)
-            # while True:
-            #     line = proc.stdout.readline()
-            #     print(line)
-            # print(line.decode("utf-8").rstrip('\r\n')) if type(line) == bytes else print(line)
-            # sleep(1)
-            # line = str(line)
-    # print(rp)
-    # print(ra)
-    # print("Searching for: ...")
-    # "git grep "
-    # string
-    # " $(git rev-list --all)"
-
-    # subprocess.call('ls', shell=True, cwd='path/to/wanted/dir/')
+                print("please add '-rp <replace arg>' at the end of previous command")
 
 
 class GeneratePassword(argparse.Action):
