@@ -111,20 +111,18 @@ def find_str_in_repo():
 
             os.chdir(repo_path)
 
-            print("Scanning repo: {} for '{}'".format(repo_path, repo_args))
-
             if replace_arg is not None:
                 print("Replacing repo: {} for '{}' with '{}\n".format(repo_path, repo_args, replace_arg))
                 cmd = "git filter-branch --tree-filter \"find . -type f -not -path '*/\.git/*' -exec sed -i -e 's/{}/{}/g' {{}} \;\"".format(
                     repo_args, replace_arg)
-
-                print(cmd)
 
                 stream = os.popen(cmd)
                 output = stream.read()
                 print(output)
 
                 sys.exit()
+
+            print("Scanning repo: {} for '{}'".format(repo_path, repo_args))
 
             print("")
             stream = os.popen('git --no-pager grep ' + repo_args + ' $(git rev-list --all)')
